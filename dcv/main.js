@@ -9,27 +9,33 @@ let auth,
 console.log("Using NICE DCV Web Client SDK version " + dcv.version.versionStr);
 document.addEventListener('DOMContentLoaded', main);
 
-function get_connection() {
-    var data;
-    // Or $.get(...).then, or request(...).then, or query(...).then
-    fetch("/instance").then(function(response){
-        data = response.json();
-    });
-    return data;
+
+async function connection_data() {
+    response = await fetch(
+        '/instance'
+    )
+    if (response.ok){
+        return await response.json()
+    }
+    else {
+         return "error"
+    }
 }
 
-function main() {
-
-    response = get_connection()
-    console.log(response)
 
 
-console.log("Setting log level to INFO");
-dcv.setLogLevel(dcv.LogLevel.INFO);
+async function main() {
 
-serverUrl = "https://ec2-65-0-75-1.ap-south-1.compute.amazonaws.com:8443/";
+    data = await connection_data()
+    let connection_token = data.connection_token
+    let sess_id = data.session_id
+    let public_ip = data.public_ip
+    console.log("Setting log level to INFO");
+    dcv.setLogLevel(dcv.LogLevel.INFO);
 
-console.log("Starting authentication with", serverUrl);
+    serverUrl = "https://" + public_ip + ":8443/";
+
+    console.log("Starting authentication with", serverUrl);
 
 // auth = dcv.authenticate(
 //     serverUrl,
@@ -39,7 +45,7 @@ console.log("Starting authentication with", serverUrl);
 //         success: onSuccess
 //     }
 // );
-connect('console', 'eyJraWQiOiJhNTQ4NzI1OS03MTFmLTQ3NWYtYjU1ZS03NWE4YWQ3OWZkMWMiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJkY3ZTZXNzaW9uSWQiOiJjb25zb2xlIiwiZGN2U2Vzc2lvblVzZXIiOiJBZG1pbmlzdHJhdG9yIiwiZXhwIjoxNjI0NjIzMjk2LCJpYXQiOjE2MjQ2MTk2OTYsImp0aSI6ImQ1ODcyOGE3LTRhOGItNGMzMi1hYWI1LWVlOGQ4YjAxMjdhOSJ9.1fBg08pj1Dqjv66Zem9sXlICBqh5J7TtPYmb2YObkvHeK-nBMxQXkvaGe8TzbUaSX4QUwy11uw9Fj5RCSpbHE8rqV1BtHS8OWCAifL5ePoZ6Z9KKQ3zgHSS6LYkVOid_GD-6G-4AsY6mJHQAcXe0ZkLKApf3wmZsctcslBN05M4sqUhNRoRuNHarDKrOGrc7Uj_uwXNGZjxoCuP_s1FcepiJChs8Pz82xQ2DFLwHxta6G88FKfFujBO3LMrZ4mhJ8vEtf3_Dy4pYvyN7o5Dbe8Yh4npftPezHZOt9LVr7gGKj2IgZSB5SlVpHIGwWMmQBXMHXf1PFLR4l4vA3AkyRdMBcExIxUyy8weIKzXISzWZO0QPJh4bbVnDk8y3hSpICdovL9yKbB92YfWndOcnGkSX7Z_7vlRsJW8TCopOIuj1LAEJFIdBDQvklJAjVKuo6dO9UBgKpqU7xVLRd7rCGvPKpjfmY31Ru6gfSLwsBx8PeMh9wvWotBxSTSvljjd5')
+    connect(sess_id, connection_token)
 
 }
 
